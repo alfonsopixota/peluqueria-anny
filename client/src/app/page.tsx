@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import Services from "@/components/Services";
 import About from "@/components/About";
 import Gallery from "@/components/Gallery";
+import Testimonials from "@/components/Testimonials";
 import BookingSystem from "@/components/BookingSystem";
 import Location from "@/components/Location";
 import Footer from "@/components/Footer";
@@ -30,6 +31,7 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
       </section>
 
+      <Testimonials />
       <BookingSystem />
       <Location />
       <Footer />

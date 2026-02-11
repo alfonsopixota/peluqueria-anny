@@ -32,11 +32,12 @@ export default function Navbar() {
                 <div className="hidden md:flex items-center space-x-8 text-sm font-medium uppercase tracking-widest">
                     <Link href="#servicios" className="hover:text-primary transition-colors">Servicios</Link>
                     <Link href="#galeria" className="hover:text-primary transition-colors">Galería</Link>
+                    <Link href="#testimonios" className="hover:text-primary transition-colors">Testimonios</Link>
                     <Link href="#nosotros" className="hover:text-primary transition-colors">Nosotros</Link>
                     <Link href="#contacto" className="hover:text-primary transition-colors">Contacto</Link>
                     <Link
                         href="#booking"
-                        className="bg-primary text-white px-6 py-2 rounded-full hover:bg-gold-600 transition-all duration-300 transform hover:scale-105"
+                        className="bg-primary text-white px-6 py-2 rounded-full hover:bg-gold-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-primary/20"
                     >
                         Reservar Cita
                     </Link>
@@ -56,6 +57,7 @@ export default function Navbar() {
                 <div className="md:hidden bg-background border-t border-border mt-4 p-6 flex flex-col space-y-4 animate-in fade-in slide-in-from-top-4">
                     <Link href="#servicios" onClick={() => setIsMobileMenuOpen(false)}>Servicios</Link>
                     <Link href="#galeria" onClick={() => setIsMobileMenuOpen(false)}>Galería</Link>
+                    <Link href="#testimonios" onClick={() => setIsMobileMenuOpen(false)}>Testimonios</Link>
                     <Link href="#nosotros" onClick={() => setIsMobileMenuOpen(false)}>Nosotros</Link>
                     <Link
                         href="#booking"

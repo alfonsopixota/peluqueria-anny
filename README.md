@@ -4,64 +4,54 @@ Aplicación web completa para la peluquería "El Frasco de Anny Del Agua" en Jer
 
 ## 🚀 Características
 
-- **Landing Page Premium**: Diseño elegante y minimalista con animaciones fluidas
-- **Sistema de Reservas**: Calendario interactivo con disponibilidad en tiempo real
-- **Panel de Administración**: Gestión de citas protegido por contraseña
-- **Responsive**: Adaptado para móviles, tablets y ordenadores
+- **Landing Page Premium**: Diseño elegante y minimalista con animaciones fluidas (Framer Motion).
+- **Sistema de Reservas Pro**: Calendario interactivo con pasos (Step-by-step) y disponibilidad dinámica.
+- **Pagos con Stripe**: Integración completa para pagos online seguros antes de confirmar la reserva.
+- **Testimonios**: Sección de experiencias de clientes con diseño de autor.
+- **Panel de Administración**: Gestión de citas protegida con autenticación por clave secreta.
+- **Notificaciones**: Envío automático de confirmación por email (Nodemailer).
+- **Responsive**: Experiencia perfecta en móviles, tablets y ordenadores.
 
 ## 📦 Tecnologías
 
 ### Frontend
-- Next.js 15
-- Tailwind CSS v4
-- TypeScript
-- Framer Motion
-- Lucide Icons
+- Next.js (App Router)
+- Tailwind CSS (Premium Design System)
+- Framer Motion (Animations)
+- Stripe Elements (Payments)
+- Lucide Icons & Date-fns
 
 ### Backend
-- Node.js
-- Express
-- MongoDB (opcional, actualmente en modo demo)
+- Node.js & Express
+- MongoDB (Mongoose)
+- Stripe API
 - Nodemailer
 
 ## 🛠️ Instalación Local
 
-### Frontend
-```bash
-cd client
-npm install
-npm run dev
-```
-
-### Backend
+### 1. Backend
 ```bash
 cd server
 npm install
-node server.js
+npm run dev # Se iniciará en puerto 5000
 ```
+*Configura tu `.env` con la URI de MongoDB y claves de Stripe.*
 
-## 🌐 Despliegue
-
-- **Frontend**: Vercel
-- **Backend**: Render
-- **Base de datos**: MongoDB Atlas (opcional)
-
-## 📝 Configuración
-
-Copia `.env.example` a `.env` y configura las variables de entorno:
-
-```env
-PORT=5000
-MONGODB_URI=tu-uri-de-mongodb
-EMAIL_HOST=smtp.gmail.com
-EMAIL_USER=tu-email@gmail.com
-EMAIL_PASS=tu-contraseña
+### 2. Frontend
+```bash
+cd client
+npm install
+npm run dev # Se iniciará en puerto 3000
 ```
 
 ## 🔐 Panel de Administración
 
-Accede en `/admin` con la contraseña: `anny2024`
+Accede en `http://localhost:3000/admin`
+- **Contraseña predeterminada**: `anny2024`
 
-## 📄 Licencia
+## 📄 Notas de Despliegue
 
+Consulta la [GUIA_DESPLIEGUE.md](./GUIA_DESPLIEGUE.md) para subir el proyecto a Vercel y Render.
+
+---
 Proyecto privado - © 2026 El Frasco de Anny Del Agua

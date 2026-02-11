@@ -3,18 +3,19 @@
 import { useState, useEffect } from "react";
 import { format, addDays, startOfToday, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, CreditCard } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, CreditCard, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import PaymentForm from "./PaymentForm";
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder");
 
 const services = [
     { id: 1, name: "Corte & Estilo", price: 25, duration: "45 min" },
     { id: 2, name: "Coloración Premium", price: 45, duration: "90 min" },
     { id: 3, name: "Tratamientos SPA", price: 30, duration: "60 min" },
     { id: 4, name: "Peinados Especiales", price: 35, duration: "60 min" }
-];
-
-const timeSlots = [
-    "09:00", "10:00", "11:00", "12:00", "13:00", "16:00", "17:00", "18:00", "19:00"
 ];
 
 export default function BookingSystem() {
@@ -30,8 +31,8 @@ export default function BookingSystem() {
 
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
+    const [clientSecret, setClientSecret] = useState("");
 
     const days = eachDayOfInterval({
         start: currentMonth,
@@ -62,9 +63,22 @@ export default function BookingSystem() {
     const handleNext = () => setStep(step + 1);
     const handleBack = () => setStep(step - 1);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        // Enviar a la API
+    const initiatePayment = async () => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/create-payment-intent`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: selectedService.price })
+            });
+            const data = await res.json();
+            setClientSecret(data.clientSecret);
+            setStep(5);
+        } catch (error) {
+            console.error("Error initiating payment:", error);
+        }
+    };
+
+    const handleBookingComplete = async () => {
         const appointmentData = {
             nombreCliente: formData.nombre,
             emailCliente: formData.email,
@@ -73,6 +87,7 @@ export default function BookingSystem() {
             precio: selectedService.price,
             fecha: selectedDate,
             hora: selectedTime,
+            estadoPago: "pagado"
         };
 
         try {
@@ -82,14 +97,15 @@ export default function BookingSystem() {
                 body: JSON.stringify(appointmentData)
             });
             if (res.ok) {
-                alert("¡Cita reservada con éxito! Revisa tu email.");
-                setStep(1);
-                // Reset state
+                setStep(6);
             }
         } catch (error) {
             console.error("Error booking:", error);
         }
     };
+
+    const appearance = { theme: 'stripe' as const };
+    const options = { clientSecret, appearance };
 
     return (
         <section id="booking" className="py-24 bg-background">
@@ -99,23 +115,26 @@ export default function BookingSystem() {
                     <h3 className="text-4xl font-serif">Tu Momento es Ahora</h3>
                 </div>
 
-                <div className="bg-secondary/50 rounded-2xl p-8 md:p-12 shadow-xl border border-border overflow-hidden">
+                <div className="bg-secondary/50 rounded-2xl p-8 md:p-12 shadow-xl border border-border overflow-hidden min-h-[500px] flex flex-col justify-center">
                     {/* Progress Bar */}
-                    <div className="flex justify-between mb-12 relative">
-                        <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-border -translate-y-1/2 z-0" />
-                        {[1, 2, 3, 4].map((i) => (
-                            <div
-                                key={i}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center relative z-10 transition-colors duration-500 ${step >= i ? "bg-primary text-white" : "bg-background text-muted border border-border"
-                                    }`}
-                            >
-                                {i === 1 && <CalendarIcon size={18} />}
-                                {i === 2 && <Clock size={18} />}
-                                {i === 3 && <User size={18} />}
-                                {i === 4 && <CreditCard size={18} />}
-                            </div>
-                        ))}
-                    </div>
+                    {step <= 5 && (
+                        <div className="flex justify-between mb-12 relative">
+                            <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-border -translate-y-1/2 z-0" />
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div
+                                    key={i}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center relative z-10 transition-colors duration-500 ${step >= i ? "bg-primary text-white" : "bg-background text-muted border border-border"
+                                        }`}
+                                >
+                                    {i === 1 && <CalendarIcon size={18} />}
+                                    {i === 2 && <Clock size={18} />}
+                                    {i === 3 && <User size={18} />}
+                                    {i === 4 && <CreditCard size={18} />}
+                                    {i === 5 && <CheckCircle2 size={18} />}
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <AnimatePresence mode="wait">
                         {step === 1 && (
@@ -212,11 +231,11 @@ export default function BookingSystem() {
                                         <button
                                             disabled={!selectedTime}
                                             onClick={handleNext}
-                                            className="w-full mt-10 bg-primary text-white py-4 rounded-full disabled:opacity-50 uppercase tracking-widest text-xs font-bold"
+                                            className="w-full mt-10 bg-primary text-white py-4 rounded-full disabled:opacity-50 uppercase tracking-widest text-xs font-bold shadow-lg shadow-primary/20"
                                         >
                                             Continuar
                                         </button>
-                                        <button onClick={handleBack} className="w-full mt-4 text-muted text-sm">Atrás</button>
+                                        <button onClick={handleBack} className="w-full mt-4 text-muted text-sm border-b border-transparent hover:border-muted inline-block transition-all">Atrás</button>
                                     </div>
                                 </div>
                             </motion.div>
@@ -265,11 +284,11 @@ export default function BookingSystem() {
                                     <button
                                         disabled={!formData.nombre || !formData.email || !formData.telefono}
                                         onClick={handleNext}
-                                        className="w-full mt-6 bg-primary text-white py-4 rounded-full disabled:opacity-50 uppercase tracking-widest text-xs font-bold"
+                                        className="w-full mt-6 bg-primary text-white py-4 rounded-full disabled:opacity-50 uppercase tracking-widest text-xs font-bold shadow-lg shadow-primary/20"
                                     >
-                                        Confirmar Datos
+                                        Ver Resumen y Pagar
                                     </button>
-                                    <button onClick={handleBack} className="w-full mt-4 text-muted text-sm">Atrás</button>
+                                    <button onClick={handleBack} className="w-full mt-4 text-muted text-sm text-center block border-b border-transparent hover:border-muted transition-all">Atrás</button>
                                 </div>
                             </motion.div>
                         )}
@@ -282,29 +301,82 @@ export default function BookingSystem() {
                                 exit={{ opacity: 0, x: -20 }}
                                 className="text-center"
                             >
-                                <div className="mb-8 p-6 bg-white rounded-2xl border border-primary/20">
-                                    <h4 className="font-serif text-2xl mb-4 text-primary">Resumen de tu Cita</h4>
-                                    <div className="space-y-2 text-left max-w-xs mx-auto">
-                                        <p className="flex justify-between"><span>Servicio:</span> <strong>{selectedService.name}</strong></p>
-                                        <p className="flex justify-between"><span>Fecha:</span> <strong>{format(selectedDate, 'PPP', { locale: es })}</strong></p>
-                                        <p className="flex justify-between"><span>Hora:</span> <strong>{selectedTime}</strong></p>
-                                        <div className="border-t border-border mt-4 pt-4 flex justify-between text-xl">
-                                            <span>Total:</span> <strong className="text-primary">{selectedService.price}€</strong>
+                                <div className="mb-8 p-8 bg-white rounded-2xl border border-primary/20 shadow-sm">
+                                    <h4 className="font-serif text-2xl mb-6 text-primary underline underline-offset-8 decoration-primary/20">Resumen de tu Cita</h4>
+                                    <div className="space-y-4 text-left max-w-sm mx-auto">
+                                        <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                                            <span className="text-muted text-sm uppercase tracking-widest">Servicio</span>
+                                            <strong className="text-accent">{selectedService.name}</strong>
+                                        </div>
+                                        <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                                            <span className="text-muted text-sm uppercase tracking-widest">Fecha</span>
+                                            <strong className="text-accent">{format(selectedDate, 'PPP', { locale: es })}</strong>
+                                        </div>
+                                        <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                                            <span className="text-muted text-sm uppercase tracking-widest">Hora</span>
+                                            <strong className="text-accent">{selectedTime}</strong>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-4 text-2xl font-serif">
+                                            <span className="text-accent">Total</span>
+                                            <strong className="text-primary">{selectedService.price}€</strong>
                                         </div>
                                     </div>
                                 </div>
 
-                                <p className="text-sm text-muted mb-8 italic">
-                                    * El pago se realizará en el establecimiento tras el servicio.
+                                <p className="text-sm text-muted mb-8 italic max-w-xs mx-auto">
+                                    * El pago se realiza de forma segura a través de Stripe para confirmar tu reserva.
                                 </p>
 
                                 <button
-                                    onClick={handleSubmit}
-                                    className="bg-primary text-white px-12 py-4 rounded-full shadow-xl hover:bg-gold-600 transition-all uppercase tracking-widest text-sm font-bold"
+                                    onClick={initiatePayment}
+                                    className="bg-primary text-white px-12 py-4 rounded-full shadow-xl hover:bg-accent transition-all uppercase tracking-widest text-sm font-bold w-full md:w-auto"
                                 >
-                                    Finalizar Reserva
+                                    Proceder al Pago
                                 </button>
-                                <button onClick={handleBack} className="w-full mt-6 text-muted text-sm">Atrás</button>
+                                <button onClick={handleBack} className="w-full mt-6 text-muted text-sm border-b border-transparent hover:border-muted inline-block transition-all">Atrás</button>
+                            </motion.div>
+                        )}
+
+                        {step === 5 && clientSecret && (
+                            <motion.div
+                                key="step5"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="max-w-md mx-auto"
+                            >
+                                <h4 className="text-xl font-serif mb-8 text-center">Pago Seguro</h4>
+                                <Elements stripe={stripePromise} options={options}>
+                                    <PaymentForm
+                                        amount={selectedService.price}
+                                        email={formData.email}
+                                        onSuccess={handleBookingComplete}
+                                        onCancel={() => setStep(4)}
+                                    />
+                                </Elements>
+                            </motion.div>
+                        )}
+
+                        {step === 6 && (
+                            <motion.div
+                                key="success"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="text-center py-12"
+                            >
+                                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20">
+                                    <CheckCircle2 size={48} className="text-green-500 animate-pulse" />
+                                </div>
+                                <h4 className="text-3xl font-serif text-accent mb-4">¡Reserva Confirmada!</h4>
+                                <p className="text-muted mb-8 max-w-md mx-auto">
+                                    Gracias {formData.nombre}, hemos recibido tu pago de {selectedService.price}€. <br />
+                                    Te hemos enviado un correo de confirmación a <strong>{formData.email}</strong>.
+                                </p>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="border border-primary text-primary px-10 py-3 rounded-full hover:bg-primary hover:text-white transition-all uppercase tracking-widest text-xs font-bold"
+                                >
+                                    Volver al Inicio
+                                </button>
                             </motion.div>
                         )}
                     </AnimatePresence>

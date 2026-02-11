@@ -24,7 +24,9 @@ export default function AdminPage() {
     const fetchAppointments = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments`, {
+                headers: { "Authorization": password }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setAppointments(data);
@@ -40,7 +42,10 @@ export default function AdminPage() {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": password
+                },
                 body: JSON.stringify({ estado: status })
             });
             if (res.ok) {
