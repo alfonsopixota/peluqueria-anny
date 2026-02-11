@@ -39,6 +39,11 @@ const transporter = nodemailer.createTransport({
 
 // --- API ROUTES ---
 
+// Health check
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', message: 'El Frasco de Anny API - Running' });
+});
+
 // 1. Crear Cita
 app.post('/api/appointments', async (req, res) => {
     try {
