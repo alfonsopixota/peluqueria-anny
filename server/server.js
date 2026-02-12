@@ -2,8 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Resend = require('resend').Resend;
 require('dotenv').config();
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const Appointment = require('./models/Appointment');
 
@@ -79,35 +82,47 @@ app.post('/api/appointments', async (req, res) => {
         await appointment.save();
 
         // Enviar Email de Confirmación
-        if (process.env.EMAIL_USER && process.env.EMAIL_USER.includes('@')) {
-            const mailOptions = {
-                from: `"El Frasco de Anny" <${process.env.EMAIL_USER}>`,
-                to: appointment.emailCliente,
-                subject: 'Confirmación de tu Cita - El Frasco de Anny',
-                html: `
-                    <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 30px; border-radius: 15px;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="color: #00BEB7; margin: 0;">El Frasco de Anny</h1>
-                            <p style="color: #666; font-style: italic;">Tu momento de belleza</p>
-                        </div>
-                        <h2 style="color: #333;">¡Hola ${appointment.nombreCliente}!</h2>
-                        <p style="font-size: 16px; color: #555;">Tu reserva ha sido confirmada con éxito. Aquí tienes los detalles:</p>
-                        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                            <p><strong>Servicio:</strong> ${appointment.servicio}</p>
-                            <p><strong>Fecha:</strong> ${new Date(appointment.fecha).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                            <p><strong>Hora:</strong> ${appointment.hora}</p>
-                            <p><strong>Precio:</strong> ${appointment.precio}€ (Pagado)</p>
-                        </div>
-                        <p style="font-size: 14px; color: #888; text-align: center; margin-top: 30px;">
-                            Calle Ejemplo 123, Jerez de la Frontera.<br>
-                            Si necesitas cancelar o cambiar tu cita, llámanos lo antes posible.
-                        </p>
+        if (process.env.RESEND_API_KEY || (process.env.EMAIL_USER && process.env.EMAIL_USER.includes('@'))) {
+            const emailHtml = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 30px; border-radius: 15px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h1 style="color: #00BEB7; margin: 0;">El Frasco de Anny</h1>
+                        <p style="color: #666; font-style: italic;">Tu momento de belleza</p>
                     </div>
-                `
-            };
-            transporter.sendMail(mailOptions)
-                .then(info => console.log('📧 Email enviado con éxito:', info.response))
-                .catch(err => console.error('❌ Error enviando email:', err.message));
+                    <h2 style="color: #333;">¡Hola ${appointment.nombreCliente}!</h2>
+                    <p style="font-size: 16px; color: #555;">Tu reserva ha sido confirmada con éxito. Aquí tienes los detalles:</p>
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <p><strong>Servicio:</strong> ${appointment.servicio}</p>
+                        <p><strong>Fecha:</strong> ${new Date(appointment.fecha).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p><strong>Hora:</strong> ${appointment.hora}</p>
+                        <p><strong>Precio:</strong> ${appointment.precio}€ (Pagado)</p>
+                    </div>
+                    <p style="font-size: 14px; color: #888; text-align: center; margin-top: 30px;">
+                        Calle Ejemplo 123, Jerez de la Frontera.<br>
+                        Si necesitas cancelar o cambiar tu cita, llámanos lo antes posible.
+                    </p>
+                </div>
+            `;
+
+            if (resend) {
+                resend.emails.send({
+                    from: 'El Frasco de Anny <onboarding@resend.dev>', // Usar este dominio temporal de Resend
+                    to: appointment.emailCliente,
+                    subject: 'Confirmación de tu Cita - El Frasco de Anny',
+                    html: emailHtml
+                }).then(() => console.log('📧 Email enviado vía Resend'))
+                    .catch(err => console.error('❌ Error Resend:', err));
+            } else if (transporter) {
+                const mailOptions = {
+                    from: `"El Frasco de Anny" <${process.env.EMAIL_USER}>`,
+                    to: appointment.emailCliente,
+                    subject: 'Confirmación de tu Cita - El Frasco de Anny',
+                    html: emailHtml
+                };
+                transporter.sendMail(mailOptions)
+                    .then(info => console.log('📧 Email enviado vía SMTP:', info.response))
+                    .catch(err => console.error('❌ Error SMTP:', err.message));
+            }
         }
 
         res.status(201).json(appointment);
