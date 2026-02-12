@@ -23,22 +23,27 @@ export default function PaymentForm({ amount, email, onSuccess, onCancel }: Paym
 
         setIsLoading(true);
 
-        const { error, paymentIntent } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                return_url: `${window.location.origin}/booking-success`,
-                receipt_email: email,
-            },
-            redirect: "if_required",
-        });
+        try {
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: `${window.location.origin}/booking-success`,
+                    receipt_email: email,
+                },
+                redirect: "if_required",
+            });
 
-        if (error) {
-            setMessage(error.message ?? "Ocurrió un error inesperado.");
-        } else if (paymentIntent && paymentIntent.status === "succeeded") {
-            onSuccess();
+            if (error) {
+                setMessage(error.message ?? "Ocurrió un error inesperado.");
+            } else if (paymentIntent && paymentIntent.status === "succeeded") {
+                await onSuccess();
+            }
+        } catch (err) {
+            console.error(err);
+            setMessage("Error al procesar el pago.");
+        } finally {
+            setIsLoading(false);
         }
-
-        setIsLoading(false);
     };
 
     return (

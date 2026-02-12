@@ -96,11 +96,18 @@ export default function BookingSystem() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(appointmentData)
             });
+
             if (res.ok) {
                 setStep(6);
+            } else {
+                const errorData = await res.json();
+                alert("Error al confirmar la cita: " + (errorData.error || "Error desconocido"));
+                setStep(4); // Volver al resumen si falla
             }
         } catch (error) {
             console.error("Error booking:", error);
+            alert("No pudimos conectar con el servidor para confirmar tu cita. Por favor, contacta con nosotros.");
+            setStep(4);
         }
     };
 
