@@ -20,8 +20,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/peluqueri
     .catch(err => console.error('❌ Error MongoDB:', err));
 
 // --- EMAIL CONFIG ---
+const emailService = process.env.EMAIL_SERVICE || 'gmail';
+console.log(`📧 Configurando servicio de email: ${emailService} para el usuario: ${process.env.EMAIL_USER}`);
+
 const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE || 'hotmail',
+    service: emailService,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -33,7 +36,7 @@ transporter.verify(function (error, success) {
     if (error) {
         console.log("❌ Error de configuración de email:", error.message);
     } else {
-        console.log("📧 Servidor de email listo para enviar mensajes");
+        console.log("✅ Servidor de email listo para enviar mensajes");
     }
 });
 
