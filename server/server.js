@@ -21,11 +21,25 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/peluqueri
 
 // --- EMAIL CONFIG ---
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
+    host: process.env.EMAIL_HOST || 'smtp-mail.outlook.com',
+    port: parseInt(process.env.EMAIL_PORT || '587'),
+    secure: false, // true para 465, false para otros como 587
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        ciphers: 'SSLv3',
+        rejectUnauthorized: false
+    }
+});
+
+// Verificar conexión del email al arrancar
+transporter.verify(function (error, success) {
+    if (error) {
+        console.log("❌ Error de configuración de email:", error.message);
+    } else {
+        console.log("📧 Servidor de email listo para enviar mensajes");
     }
 });
 
