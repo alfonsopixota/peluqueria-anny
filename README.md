@@ -1,31 +1,25 @@
 # El Frasco de Anny Del Agua
 
-Aplicación web completa para la peluquería "El Frasco de Anny Del Agua" en Jerez.
+[![Security Audit: Passed](https://img.shields.io/badge/Security_Audit-Passed-brightgreen)](./walkthrough.md)
+
+Aplicación web completa para la peluquería "El Frasco de Anny Del Agua" en Jerez. El sistema ha sido auditado y fortalecido siguiendo protocolos OWASP y de ingeniería sénior.
 
 ## 🚀 Características
 
-- **Landing Page Premium**: Diseño elegante y minimalista con animaciones fluidas (Framer Motion).
-- **Sistema de Reservas Pro**: Calendario interactivo con pasos (Step-by-step) y disponibilidad dinámica.
-- **Pagos con Stripe**: Integración completa para pagos online seguros antes de confirmar la reserva.
-- **Testimonios**: Sección de experiencias de clientes con diseño de autor.
-- **Panel de Administración**: Gestión de citas protegida con autenticación por clave secreta.
-- **Notificaciones**: Envío automático de confirmación por email (Nodemailer).
-- **Responsive**: Experiencia perfecta en móviles, tablets y ordenadores.
+- **Landing Page Premium**: Diseño elegante con animaciones fluidas.
+- **Sistema de Reservas Pro**: Disponibilidad dinámica y prevención de duplicados.
+- **Pagos con Stripe**: Integración segura de pagos online.
+- **Seguridad Avanzada**: Protección contra XSS, CSRF, Rate-limiting y Mass Assignment.
+- **Autenticación JWT**: Panel de administración protegido mediante tokens firmados.
+- **Infraestructura**: Despliegue optimizado en Vercel y Render.
 
 ## 📦 Tecnologías
 
 ### Frontend
-- Next.js (App Router)
-- Tailwind CSS (Premium Design System)
-- Framer Motion (Animations)
-- Stripe Elements (Payments)
-- Lucide Icons & Date-fns
+- Next.js (App Router), Framer Motion, Tailwind CSS, Stripe Elements.
 
-### Backend
-- Node.js & Express
-- MongoDB (Mongoose)
-- Stripe API
-- Nodemailer
+### Backend (Modular)
+- Node.js & Express, MongoDB (Mongoose), jsonwebtoken, Helmet, Express-rate-limit.
 
 ## 🛠️ Instalación Local
 
@@ -33,25 +27,28 @@ Aplicación web completa para la peluquería "El Frasco de Anny Del Agua" en Jer
 ```bash
 cd server
 npm install
-npm run dev # Se iniciará en puerto 5000
+npm run dev # Inicia en puerto 5000
 ```
-*Configura tu `.env` con la URI de MongoDB y claves de Stripe.*
+*Variables requeridas en `.env`: `MONGODB_URI`, `STRIPE_SECRET_KEY`, `ADMIN_SECRET_KEY`, `JWT_SECRET`.*
 
 ### 2. Frontend
 ```bash
 cd client
 npm install
-npm run dev # Se iniciará en puerto 3000
+npm run dev # Inicia en puerto 3000
 ```
 
 ## 🔐 Panel de Administración
 
-Accede en `http://localhost:3000/admin`
-- **Contraseña predeterminada**: `anny2024`
+El acceso ahora utiliza **JWT**.
+1. **Login**: Realiza un POST a `/api/admin/login` con la contraseña.
+2. **Autorización**: Incluye el token devuelto en la cabecera `Authorization: Bearer <token>`.
 
-## 📄 Notas de Despliegue
+## 📄 Documentación Adicional
 
-Consulta la [GUIA_DESPLIEGUE.md](./GUIA_DESPLIEGUE.md) para subir el proyecto a Vercel y Render.
+- [Guía de Despliegue](./GUIA_DESPLIEGUE.md)
+- [Informe de Auditoría](./walkthrough.md)
+- [Política de Privacidad](./POLITICA_PRIVACIDAD.md)
 
 ---
 Proyecto privado - © 2026 El Frasco de Anny Del Agua
