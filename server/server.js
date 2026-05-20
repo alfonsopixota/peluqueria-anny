@@ -26,22 +26,26 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/peluqueri
 const emailService = process.env.EMAIL_SERVICE || 'gmail';
 console.log(`📧 Configurando servicio de email: ${emailService} para el usuario: ${process.env.EMAIL_USER}`);
 
-const transporter = nodemailer.createTransport({
-    service: emailService,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+const transporter = (process.env.EMAIL_USER && process.env.EMAIL_PASS)
+    ? nodemailer.createTransport({
+        service: emailService,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    })
+    : null;
 
-// Verificar conexión del email al arrancar
-transporter.verify(function (error, success) {
-    if (error) {
-        console.log("❌ Error de configuración de email:", error.message);
-    } else {
-        console.log("✅ Servidor de email listo para enviar mensajes");
-    }
-});
+// Verificar conexión del email solo si hay credenciales configuradas
+if (transporter) {
+    transporter.verify(function (error) {
+        if (error) {
+            console.log("❌ Error de configuración de email:", error.message);
+        } else {
+            console.log("✅ Servidor de email listo para enviar mensajes");
+        }
+    });
+}
 
 // Middleware de Autenticación Simple para Admin
 const adminAuth = (req, res, next) => {
