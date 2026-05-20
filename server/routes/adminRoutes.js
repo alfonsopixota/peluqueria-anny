@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 
 router.post('/login', (req, res) => {
     const { password } = req.body;
-    const adminKey = process.env.ADMIN_SECRET_KEY || 'anny2024';
+    const adminKey = process.env.ADMIN_SECRET_KEY;
+    if (!adminKey) {
+        return res.status(500).json({ error: 'Configuración del servidor incompleta' });
+    }
 
     if (password === adminKey) {
         const token = jwt.sign(

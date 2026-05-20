@@ -12,7 +12,7 @@ exports.createPaymentIntent = async (req, res) => {
             currency: 'eur',
             automatic_payment_methods: { enabled: true },
         });
-        
+
         res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
         console.error('❌ Error creando payment intent:', error);

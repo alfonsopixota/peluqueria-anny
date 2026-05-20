@@ -26,8 +26,6 @@ const services: Service[] = [
     { id: 4, name: "Peinados Especiales", price: 35, duration: "60 min" }
 ];
 
-type Service = (typeof services)[number];
-
 export default function BookingSystem() {
     const [step, setStep] = useState(1);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -158,7 +156,7 @@ export default function BookingSystem() {
 
                     <AnimatePresence mode="wait">
                         {step === 1 && (
-                            <ServiceSelection 
+                            <ServiceSelection
                                 services={services}
                                 selectedService={selectedService}
                                 onSelect={(s) => { setSelectedService(s); handleNext(); }}
@@ -166,7 +164,7 @@ export default function BookingSystem() {
                         )}
 
                         {step === 2 && (
-                            <DateSelection 
+                            <DateSelection
                                 currentMonth={currentMonth}
                                 days={days}
                                 selectedDate={selectedDate}
@@ -183,7 +181,7 @@ export default function BookingSystem() {
                         )}
 
                         {step === 3 && (
-                            <UserDetailsForm 
+                            <UserDetailsForm
                                 formData={formData}
                                 setFormData={setFormData}
                                 onNext={handleNext}
@@ -192,7 +190,7 @@ export default function BookingSystem() {
                         )}
 
                         {step === 4 && selectedService && (
-                            <SummaryPayment 
+                            <SummaryPayment
                                 selectedService={selectedService}
                                 selectedDate={selectedDate}
                                 selectedTime={selectedTime}
