@@ -19,24 +19,40 @@ type Appointment = {
 export default function AdminPage() {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [password, setPassword] = useState("");
+    const [token, setToken] = useState("");
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === "anny2024") {
-            setIsAuthorized(true);
-            fetchAppointments();
-        } else {
-            alert("Contraseña incorrecta");
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const jwt = data.token;
+                setToken(jwt);
+                setPassword(""); // Limpiar la contraseña del estado tras el login
+                setIsAuthorized(true);
+                fetchAppointmentsWithToken(jwt);
+            } else {
+                alert("Contraseña incorrecta");
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            alert("Error de conexión");
         }
     };
 
-    const fetchAppointments = async () => {
+    const fetchAppointmentsWithToken = async (token: string) => {
         setIsLoading(true);
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments`, {
-                headers: { "Authorization": password }
+                headers: { "Authorization": `Bearer ${token}` }
             });
             if (res.ok) {
                 const data = await res.json();
@@ -49,13 +65,19 @@ export default function AdminPage() {
         }
     };
 
+    const fetchAppointments = () => {
+        fetchAppointmentsWithToken(token);
+    };
+
+
+
     const updateStatus = async (id: string, status: Appointment["estado"]) => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": password
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({ estado: status })
             });
@@ -101,7 +123,7 @@ export default function AdminPage() {
                         EL FRASCO <span className="text-white font-light text-xs ml-1 font-sans uppercase tracking-[0.2em]">Dashboard</span>
                     </h1>
                     <button
-                        onClick={() => setIsAuthorized(false)}
+                        onClick={() => { setIsAuthorized(false); setToken(""); setPassword(""); }}
                         className="flex items-center gap-2 text-xs uppercase tracking-widest hover:text-primary transition-colors"
                     >
                         <LogOut size={16} /> Salir

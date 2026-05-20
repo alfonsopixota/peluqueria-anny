@@ -43,12 +43,17 @@ const AppointmentSchema = new mongoose.Schema({
     default: 'pendiente'
   },
   stripePaymentIntentId: {
-    type: String
+    type: String,
+    unique: true, // Prevent duplicate appointments for the same payment
+    sparse: true  // Allow multiple nulls if not provided
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+// Added index for fast lookup of available slots
+AppointmentSchema.index({ fecha: 1, estado: 1 });
 
 module.exports = mongoose.model('Appointment', AppointmentSchema);
