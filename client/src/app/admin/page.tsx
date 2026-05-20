@@ -1,14 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { LogOut, Calendar, Phone, Mail, User, CheckCircle, XCircle, Clock } from "lucide-react";
+import { LogOut, Calendar, Phone, Mail, CheckCircle, XCircle, Clock } from "lucide-react";
+
+type Appointment = {
+    _id: string;
+    nombreCliente: string;
+    emailCliente: string;
+    telefonoCliente: string;
+    servicio: string;
+    fecha: string;
+    hora: string;
+    estado: "pendiente" | "confirmada" | "cancelada";
+};
 
 export default function AdminPage() {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [password, setPassword] = useState("");
-    const [appointments, setAppointments] = useState<any[]>([]);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const handleLogin = (e: React.FormEvent) => {
@@ -38,7 +49,7 @@ export default function AdminPage() {
         }
     };
 
-    const updateStatus = async (id: string, status: string) => {
+    const updateStatus = async (id: string, status: Appointment["estado"]) => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${id}`, {
                 method: "PATCH",
@@ -123,10 +134,10 @@ export default function AdminPage() {
                 ) : (
                     <div className="grid gap-6">
                         {appointments.map((apt) => (
-                            <div key={apt._id} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-border flex flex-col md:row items-center justify-between gap-6 hover:shadow-md transition-all">
-                                <div className="flex flex-col md:row items-center gap-6 flex-1">
+                            <div key={apt._id} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-border flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-md transition-all">
+                                <div className="flex flex-col md:flex-row items-center gap-6 flex-1">
                                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl">
-                                        {apt.nombreCliente[0]}
+                                        {apt.nombreCliente[0] ?? "A"}
                                     </div>
                                     <div className="space-y-1 text-center md:text-left">
                                         <h3 className="text-xl font-bold">{apt.nombreCliente}</h3>
