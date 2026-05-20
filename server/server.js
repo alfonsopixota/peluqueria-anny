@@ -63,16 +63,6 @@ if (transporter) {
     });
 }
 
-// Middleware de Autenticación Simple para Admin
-const adminAuth = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (authHeader === process.env.ADMIN_SECRET_KEY || authHeader === 'anny2024') {
-        next();
-    } else {
-        res.status(401).json({ error: 'No autorizado' });
-    }
-};
-
 // --- API ROUTES ---
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);

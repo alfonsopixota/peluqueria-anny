@@ -19,6 +19,7 @@ type Appointment = {
 export default function AdminPage() {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [password, setPassword] = useState("");
+    const [token, setToken] = useState("");
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -33,10 +34,11 @@ export default function AdminPage() {
 
             if (res.ok) {
                 const data = await res.json();
-                const token = data.token;
-                setPassword(token); // Almacenamos temporalmente el JWT aquí en lugar de la contraseña cruda
+                const jwt = data.token;
+                setToken(jwt);
+                setPassword(""); // Limpiar la contraseña del estado tras el login
                 setIsAuthorized(true);
-                fetchAppointmentsWithToken(token);
+                fetchAppointmentsWithToken(jwt);
             } else {
                 alert("Contraseña incorrecta");
             }
@@ -64,10 +66,10 @@ export default function AdminPage() {
     };
 
     const fetchAppointments = () => {
-        fetchAppointmentsWithToken(password);
+        fetchAppointmentsWithToken(token);
     };
 
-// This block is replaced above in fetchAppointmentsWithToken
+
 
     const updateStatus = async (id: string, status: Appointment["estado"]) => {
         try {
@@ -75,7 +77,7 @@ export default function AdminPage() {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${password}` // password holds the JWT token now
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({ estado: status })
             });
@@ -121,7 +123,7 @@ export default function AdminPage() {
                         EL FRASCO <span className="text-white font-light text-xs ml-1 font-sans uppercase tracking-[0.2em]">Dashboard</span>
                     </h1>
                     <button
-                        onClick={() => setIsAuthorized(false)}
+                        onClick={() => { setIsAuthorized(false); setToken(""); setPassword(""); }}
                         className="flex items-center gap-2 text-xs uppercase tracking-widest hover:text-primary transition-colors"
                     >
                         <LogOut size={16} /> Salir
