@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, addDays, startOfToday, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
+import { format, startOfToday, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, CreditCard, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,9 +18,11 @@ const services = [
     { id: 4, name: "Peinados Especiales", price: 35, duration: "60 min" }
 ];
 
+type Service = (typeof services)[number];
+
 export default function BookingSystem() {
     const [step, setStep] = useState(1);
-    const [selectedService, setSelectedService] = useState<any>(null);
+    const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [selectedDate, setSelectedDate] = useState(startOfToday());
     const [selectedTime, setSelectedTime] = useState("");
     const [formData, setFormData] = useState({
@@ -64,6 +66,7 @@ export default function BookingSystem() {
     const handleBack = () => setStep(step - 1);
 
     const initiatePayment = async () => {
+        if (!selectedService) return;
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/create-payment-intent`, {
                 method: "POST",
@@ -79,6 +82,7 @@ export default function BookingSystem() {
     };
 
     const handleBookingComplete = async () => {
+        if (!selectedService) return;
         const appointmentData = {
             nombreCliente: formData.nombre,
             emailCliente: formData.email,
@@ -102,7 +106,7 @@ export default function BookingSystem() {
             } else {
                 const errorData = await res.json();
                 alert("Error al confirmar la cita: " + (errorData.error || "Error desconocido"));
-                setStep(4); // Volver al resumen si falla
+                setStep(4);
             }
         } catch (error) {
             console.error("Error booking:", error);
@@ -313,7 +317,7 @@ export default function BookingSystem() {
                                     <div className="space-y-4 text-left max-w-sm mx-auto">
                                         <div className="flex justify-between items-center pb-2 border-b border-border/50">
                                             <span className="text-muted text-sm uppercase tracking-widest">Servicio</span>
-                                            <strong className="text-accent">{selectedService.name}</strong>
+                                            <strong className="text-accent">{selectedService!.name}</strong>
                                         </div>
                                         <div className="flex justify-between items-center pb-2 border-b border-border/50">
                                             <span className="text-muted text-sm uppercase tracking-widest">Fecha</span>
@@ -325,7 +329,7 @@ export default function BookingSystem() {
                                         </div>
                                         <div className="flex justify-between items-center pt-4 text-2xl font-serif">
                                             <span className="text-accent">Total</span>
-                                            <strong className="text-primary">{selectedService.price}€</strong>
+                                            <strong className="text-primary">{selectedService!.price}€</strong>
                                         </div>
                                     </div>
                                 </div>
@@ -354,7 +358,7 @@ export default function BookingSystem() {
                                 <h4 className="text-xl font-serif mb-8 text-center">Pago Seguro</h4>
                                 <Elements stripe={stripePromise} options={options}>
                                     <PaymentForm
-                                        amount={selectedService.price}
+                                        amount={selectedService!.price}
                                         email={formData.email}
                                         onSuccess={handleBookingComplete}
                                         onCancel={() => setStep(4)}
@@ -375,7 +379,7 @@ export default function BookingSystem() {
                                 </div>
                                 <h4 className="text-3xl font-serif text-accent mb-4">¡Reserva Confirmada!</h4>
                                 <p className="text-muted mb-8 max-w-md mx-auto">
-                                    Gracias {formData.nombre}, hemos recibido tu pago de {selectedService.price}€. <br />
+                                    Gracias {formData.nombre}, hemos recibido tu pago de {selectedService!.price}€. <br />
                                     Te hemos enviado un correo de confirmación a <strong>{formData.email}</strong>.
                                 </p>
                                 <button
