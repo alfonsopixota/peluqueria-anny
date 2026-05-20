@@ -47,7 +47,7 @@ export default function Testimonials() {
                                 <Quote className="text-primary" size={24} />
                             </div>
                             <p className="text-muted text-lg mb-8 italic leading-relaxed">
-                                "{t.text}"
+                                &ldquo;{t.text}&rdquo;
                             </p>
                             <div>
                                 <h4 className="font-bold text-accent uppercase tracking-widest text-xs mb-1">{t.name}</h4>
