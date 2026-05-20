@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const services = [
     {
@@ -50,10 +51,12 @@ export default function Services() {
                             className="group cursor-pointer"
                         >
                             <div className="relative overflow-hidden aspect-[3/4] mb-6 rounded-sm">
-                                <img
+                                <Image
                                     src={service.image}
                                     alt={service.title}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 25vw"
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
                             </div>
