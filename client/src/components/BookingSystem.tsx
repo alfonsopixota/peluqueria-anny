@@ -26,13 +26,14 @@ const services: Service[] = [
     { id: 4, name: "Peinados Especiales", price: 35, duration: "60 min" }
 ];
 
+type Service = (typeof services)[number];
+
 export default function BookingSystem() {
     const [step, setStep] = useState(1);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
     const [selectedTime, setSelectedTime] = useState<string>("");
     const [formData, setFormData] = useState<FormData>({ nombre: "", email: "", telefono: "" });
-    
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
@@ -67,6 +68,7 @@ export default function BookingSystem() {
     const handleBack = () => setStep(prev => prev - 1);
 
     const initiatePayment = async () => {
+        if (!selectedService) return;
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/create-payment-intent`, {
                 method: "POST",
@@ -87,6 +89,7 @@ export default function BookingSystem() {
     };
 
     const handleBookingComplete = async () => {
+        if (!selectedService) return;
         const appointmentData = {
             nombreCliente: formData.nombre,
             emailCliente: formData.email,
@@ -208,7 +211,7 @@ export default function BookingSystem() {
                                 <h4 className="text-xl font-serif mb-8 text-center">Pago Seguro</h4>
                                 <Elements stripe={stripePromise} options={options}>
                                     <PaymentForm
-                                        amount={selectedService.price}
+                                        amount={selectedService!.price}
                                         email={formData.email}
                                         onSuccess={handleBookingComplete}
                                         onCancel={() => setStep(4)}
@@ -229,7 +232,7 @@ export default function BookingSystem() {
                                 </div>
                                 <h4 className="text-3xl font-serif text-accent mb-4">¡Reserva Confirmada!</h4>
                                 <p className="text-muted mb-8 max-w-md mx-auto">
-                                    Gracias {formData.nombre}, hemos recibido tu pago de {selectedService.price}€. <br />
+                                    Gracias {formData.nombre}, hemos recibido tu pago de {selectedService!.price}€. <br />
                                     Te hemos enviado un correo de confirmación a <strong>{formData.email}</strong>.
                                 </p>
                                 <button

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function About() {
     return (
@@ -14,11 +15,13 @@ export default function About() {
                         viewport={{ once: true }}
                         className="relative"
                     >
-                        <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl">
-                            <img
+                        <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl relative">
+                            <Image
                                 src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=800&auto=format&fit=crop"
                                 alt="Anny del Agua"
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                className="object-cover"
                             />
                         </div>
                         {/* Decorative element */}
