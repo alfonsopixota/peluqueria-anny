@@ -21,7 +21,7 @@ export default function Home() {
         <div className="container mx-auto px-6 relative z-10 text-center">
           <div className="max-w-3xl mx-auto font-light italic">
             <h2 className="text-3xl md:text-5xl font-serif mb-8 leading-relaxed">
-              "La peluquería no es solo cortar el cabello, es descubrir la confianza que cada persona lleva dentro."
+              &ldquo;La peluquería no es solo cortar el cabello, es descubrir la confianza que cada persona lleva dentro.&rdquo;
             </h2>
             <div className="w-12 h-[1px] bg-primary mx-auto mb-4 opacity-50"></div>
             <p className="text-primary tracking-[0.3em] uppercase text-xs font-bold">Anny del Agua</p>
