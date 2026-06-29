@@ -6,7 +6,7 @@ import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
 interface PaymentFormProps {
     amount: number;
     email: string;
-    onSuccess: () => void;
+    onSuccess: (paymentIntentId: string) => void;
     onCancel: () => void;
 }
 
@@ -36,7 +36,7 @@ export default function PaymentForm({ amount, email, onSuccess, onCancel }: Paym
             if (error) {
                 setMessage(error.message ?? "Ocurrió un error inesperado.");
             } else if (paymentIntent && paymentIntent.status === "succeeded") {
-                await onSuccess();
+                await onSuccess(paymentIntent.id);
             }
         } catch (err) {
             console.error(err);

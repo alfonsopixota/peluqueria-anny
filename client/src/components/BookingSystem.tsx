@@ -36,6 +36,7 @@ export default function BookingSystem() {
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
     const [clientSecret, setClientSecret] = useState("");
+    const [paymentIntentId, setPaymentIntentId] = useState("");
 
     const days = eachDayOfInterval({ start: currentMonth, end: endOfMonth(currentMonth) });
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -86,7 +87,7 @@ export default function BookingSystem() {
         }
     };
 
-    const handleBookingComplete = async () => {
+    const handleBookingComplete = async (paidPaymentIntentId: string) => {
         if (!selectedService) return;
         const appointmentData = {
             nombreCliente: formData.nombre,
@@ -96,7 +97,7 @@ export default function BookingSystem() {
             precio: selectedService?.price,
             fecha: selectedDate,
             hora: selectedTime,
-            estadoPago: "pagado"
+            stripePaymentIntentId: paidPaymentIntentId
         };
 
         try {

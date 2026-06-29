@@ -3,7 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 exports.createPaymentIntent = async (req, res) => {
     try {
         const { amount } = req.body;
-        if (!amount || amount <= 0) {
+        if (typeof amount !== 'number' || !amount || amount <= 0) {
             return res.status(400).json({ error: 'Monto inválido' });
         }
 

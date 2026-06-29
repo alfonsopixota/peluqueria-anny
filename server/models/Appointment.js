@@ -44,8 +44,8 @@ const AppointmentSchema = new mongoose.Schema({
   },
   stripePaymentIntentId: {
     type: String,
-    unique: true, // Prevent duplicate appointments for the same payment
-    sparse: true  // Allow multiple nulls if not provided
+    required: true,
+    unique: true // Prevent duplicate appointments for the same payment
   },
   createdAt: {
     type: Date,

@@ -37,32 +37,6 @@ const appointmentRoutes = require('./routes/appointmentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 
-// --- EMAIL CONFIG ---
-const nodemailer = require('nodemailer');
-const emailService = process.env.EMAIL_SERVICE || 'gmail';
-console.log(`📧 Configurando servicio de email: ${emailService} para el usuario: ${process.env.EMAIL_USER}`);
-
-const transporter = (process.env.EMAIL_USER && process.env.EMAIL_PASS)
-    ? nodemailer.createTransport({
-        service: emailService,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    })
-    : null;
-
-// Verificar conexión del email solo si hay credenciales configuradas
-if (transporter) {
-    transporter.verify(function (error) {
-        if (error) {
-            console.log("❌ Error de configuración de email:", error.message);
-        } else {
-            console.log("✅ Servidor de email listo para enviar mensajes");
-        }
-    });
-}
-
 // --- API ROUTES ---
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);

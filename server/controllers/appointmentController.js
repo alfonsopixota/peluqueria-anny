@@ -1,6 +1,8 @@
 const Appointment = require('../models/Appointment');
 const nodemailer = require('nodemailer');
 const Resend = require('resend').Resend;
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { getServicePrice } = require('../config/services');
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -68,13 +70,30 @@ exports.createAppointment = async (req, res) => {
     try {
         const {
             nombreCliente, emailCliente, telefonoCliente,
-            servicio, precio, fecha, hora, stripePaymentIntentId
+            servicio, fecha, hora, stripePaymentIntentId
         } = req.body;
+
+        if (!stripePaymentIntentId) {
+            return res.status(400).json({ error: 'stripePaymentIntentId es requerido' });
+        }
+
+        // Verify payment with Stripe
+        const paymentIntent = await stripe.paymentIntents.retrieve(stripePaymentIntentId);
+        if (paymentIntent.status !== 'succeeded') {
+            return res.status(400).json({ error: 'El pago no ha sido completado' });
+        }
+
+        // Derive price server-side
+        const precio = getServicePrice(servicio);
+        if (precio === null) {
+            return res.status(400).json({ error: 'Servicio no válido' });
+        }
 
         const appointment = new Appointment({
             nombreCliente, emailCliente, telefonoCliente,
             servicio, precio, fecha, hora, stripePaymentIntentId,
-            estado: 'pendiente'
+            estado: 'pendiente',
+            estadoPago: 'pagado'
         });
 
         await appointment.save();
@@ -126,7 +145,7 @@ exports.updateAppointmentStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { estado } = req.body;
-        const appointment = await Appointment.findByIdAndUpdate(id, { estado }, { new: true });
+        const appointment = await Appointment.findByIdAndUpdate(id, { estado }, { new: true, runValidators: true });
         if (!appointment) return res.status(404).json({ error: 'Cita no encontrada' });
         res.json(appointment);
     } catch (error) {

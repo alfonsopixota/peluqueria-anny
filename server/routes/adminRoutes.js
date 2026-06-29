@@ -12,7 +12,7 @@ router.post('/login', (req, res) => {
     if (password === adminKey) {
         const token = jwt.sign(
             { role: 'admin' },
-            process.env.JWT_SECRET || 'anny_secret_2024_k3y',
+            process.env.JWT_SECRET,
             { expiresIn: '2h' }
         );
         return res.json({ token });
